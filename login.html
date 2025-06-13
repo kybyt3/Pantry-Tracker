@@ -12,14 +12,7 @@
       background: #f0f0f0;
     }
 
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
-
-    .main-menu {
+    .login-container {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -57,8 +50,8 @@
       font-weight: bold;
     }
 
-    button.logout {
-      background-color: #b34c4c;
+    button.admin {
+      background-color: #28a745;
     }
 
     button:hover {
@@ -68,21 +61,34 @@
 </head>
 <body>
 
-<div class="main-menu" id="mainMenu">
-  <h1>Main Menu</h1>
-  <button onclick="window.location.href='pantry.html'">Manage Pantry</button>
-  <button onclick="window.location.href='shopping-lists.html'">Manage Shopping Lists</button>
-  <button onclick="window.location.href='expiration-dates.html'">View Expiration Dates</button>
-  <button class="logout" onclick="window.location.href='login.html'">Log Out</button>
+<canvas id="backgroundCanvas"></canvas>
+
+<div class="login-container" id="loginContainer">
+  <h1>Pantry Tracker</h1>
+  <input type="text" id="username" placeholder="Username" />
+  <input type="password" id="password" placeholder="Password" />
+  <button onclick="login()">Login</button>
+  <button class="admin" onclick="adminLogin()">Admin Login</button>
 </div>
 
 <script>
-  function logout() {
-    document.getElementById("mainMenu").style.display = "none";
-    document.getElementById("loginContainer").style.display = "block";
-    document.getElementById("username").value = "";
-    document.getElementById("password").value = "";
+  function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    if (username === "user" && password === "pass") {
+      document.getElementById("loginContainer").style.display = "none";
+      window.location.href='dashboard.html';
+    } else {
+      alert("Incorrect username or password.");
+    }
   }
+
+  function adminLogin() {
+    const adminUsername = prompt("Enter admin username:");
+    const adminPassword = prompt("Enter admin password:");
+    alert(`Admin Login:\nUsername: ${adminUsername}\nPassword: ${adminPassword}`);
+  }
+
 </script>
 
 </body>
