@@ -1,95 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pantry Tracker</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background: #f0f0f0;
-    }
-
-    .login-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 30px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      width: 300px;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      font-size: 24px;
-    }
-
-    input[type="text"], input[type="password"] {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      width: 95%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button.admin {
-      background-color: #28a745;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Pantry Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="container">
+        <div class="text-center mt-2">
+            <h1>Pantry Inventory Management</h1>
+            <p>Please login to continue</p>
+        </div>
 
-<canvas id="backgroundCanvas"></canvas>
+        <div style="max-width: 400px; margin: 2rem auto;">
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
 
-<div class="login-container" id="loginContainer">
-  <h1>Pantry Tracker</h1>
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="login()">Login</button>
-  <button class="admin" onclick="adminLogin()">Admin Login</button>
-</div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
 
-<script>
-  function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    if (username === "user" && password === "pass") {
-      document.getElementById("loginContainer").style.display = "none";
-      window.location.href='dashboard.html';
-    } else {
-      alert("Incorrect username or password.");
-    }
-  }
+                <div class="form-group">
+                    <label for="userType">Login As</label>
+                    <select id="userType" class="form-control" required>
+                        <option value="user">Regular User</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
 
-  function adminLogin() {
-    const adminUsername = prompt("Enter admin username:");
-    const adminPassword = prompt("Enter admin password:");
-    alert(`Admin Login:\nUsername: ${adminUsername}\nPassword: ${adminPassword}`);
-  }
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
 
-</script>
+            <div class="text-center mt-2">
+                <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+            </div>
+        </div>
+    </div>
 
+    <script src="app.js"></script>
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const userType = document.getElementById('userType').value;
+
+            // This will be replaced with actual Firebase authentication
+            // For now, we'll just simulate a successful login
+            if (email && password) {
+                // Store user type in localStorage
+                localStorage.setItem('userRole', userType);
+                localStorage.setItem('userEmail', email);
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                showAlert('Please enter both email and password', 'danger');
+            }
+
+            return false;
+        }
+    </script>
 </body>
-</html>
+</html> 

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Pantry Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mt-2">
+            <h1>Create an Account</h1>
+            <p>Join our Pantry Inventory Management System</p>
+        </div>
+
+        <div style="max-width: 400px; margin: 2rem auto;">
+            <form id="signupForm" onsubmit="return handleSignup(event)">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required 
+                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                           title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                    <small class="form-text text-muted">
+                        Password must be at least 8 characters long and include uppercase, lowercase, and numbers
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+            </form>
+
+            <div class="text-center mt-2">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Password validation
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'danger');
+                return false;
+            }
+
+            const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                showAlert('Password must be at least 8 characters long and include uppercase, lowercase, and numbers', 'danger');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Handle signup
+        function handleSignup(event) {
+            event.preventDefault();
+            
+            if (!validatePassword()) {
+                return false;
+            }
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // This will be replaced with actual Firebase authentication
+            // For now, we'll just simulate a successful signup
+            if (fullName && email && password) {
+                // Store user info in localStorage
+                localStorage.setItem('userRole', 'user'); // Default role for new users
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userName', fullName);
+                
+                showAlert('Account created successfully! Redirecting to login...', 'success');
+                
+                // Redirect to login page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else {
+                showAlert('Please fill in all fields', 'danger');
+            }
+
+            return false;
+        }
+
+        // Add real-time password validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+</body>
+</html> 

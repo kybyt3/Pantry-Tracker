@@ -1,89 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pantry Tracker</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background: #f0f0f0;
-    }
-
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
-
-    .main-menu {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 30px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      width: 300px;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      font-size: 24px;
-    }
-
-    input[type="text"], input[type="password"] {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      width: 95%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button.logout {
-      background-color: #b34c4c;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Pantry Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <nav class="navbar">
+        <ul class="nav-list">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="pantry.html">Pantry</a></li>
+            <li><a href="shopping-list.html">Shopping List</a></li>
+            <li><a href="#" onclick="handleLogout()">Logout</a></li>
+        </ul>
+    </nav>
 
-<div class="main-menu" id="mainMenu">
-  <h1>Main Menu</h1>
-  <button onclick="window.location.href='pantry.html'">Manage Pantry</button>
-  <button onclick="window.location.href='shopping-lists.html'">Manage Shopping Lists</button>
-  <button onclick="window.location.href='expiration-dates.html'">View Expiration Dates</button>
-  <button class="logout" onclick="window.location.href='login.html'">Log Out</button>
-</div>
+    <div class="container">
+        <div class="text-center mt-2">
+            <h1>Welcome to Your Dashboard</h1>
+            <p>Manage your pantry inventory efficiently</p>
+            <p id="userInfo" class="mt-2"></p>
+        </div>
 
-<script>
-  function logout() {
-    document.getElementById("mainMenu").style.display = "none";
-    document.getElementById("loginContainer").style.display = "block";
-    document.getElementById("username").value = "";
-    document.getElementById("password").value = "";
-  }
-</script>
+        <!-- Notifications Section -->
+        <div id="notifications" class="mt-2">
+            <!-- Notifications will be populated dynamically -->
+        </div>
 
+        <div class="mt-2">
+            <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <!-- Common Features for All Users -->
+                <div class="card" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <h3>Quick Actions</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0;">
+                            <a href="pantry.html" class="btn btn-primary" style="width: 100%;">View Pantry</a>
+                        </li>
+                        <li style="margin: 0.5rem 0;">
+                            <a href="shopping-list.html" class="btn btn-primary" style="width: 100%;">View Shopping List</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <h3>Inventory Summary</h3>
+                    <p>Total Items: <span id="totalItems">0</span></p>
+                    <p>Items Expiring Soon: <span id="expiringItems">0</span></p>
+                    <p>Low Stock Items: <span id="lowStockItems">0</span></p>
+                </div>
+
+                <!-- Admin Features -->
+                <div id="adminFeatures" class="card" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px; display: none;">
+                    <h3>Admin Tools</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0;">
+                            <a href="user-logs.html" class="btn btn-primary" style="width: 100%;">View User Logs</a>
+                        </li>
+                        <li style="margin: 0.5rem 0;">
+                            <a href="manage-users.html" class="btn btn-primary" style="width: 100%;">Manage Users</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Check user role and display appropriate features
+        function checkUserRole() {
+            const userRole = localStorage.getItem('userRole');
+            const userEmail = localStorage.getItem('userEmail');
+            
+            if (!userRole || !userEmail) {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Display user info
+            const userInfo = document.getElementById('userInfo');
+            userInfo.textContent = `Logged in as: ${userEmail} (${userRole})`;
+
+            // Show/hide admin features
+            const adminFeatures = document.getElementById('adminFeatures');
+            adminFeatures.style.display = userRole === 'admin' ? 'block' : 'none';
+        }
+
+        // Check for expiring items
+        function checkExpiringItems() {
+            // This will be replaced with actual Firebase data
+            const pantryItems = [
+                { name: 'Milk', expirationDate: '2024-03-20', quantity: 1 },
+                { name: 'Bread', expirationDate: '2024-03-18', quantity: 2 },
+                { name: 'Eggs', expirationDate: '2024-03-25', quantity: 12 }
+            ];
+
+            const today = new Date();
+            const notificationsContainer = document.getElementById('notifications');
+            notificationsContainer.innerHTML = '';
+
+            const expiringItems = pantryItems.filter(item => {
+                const expDate = new Date(item.expirationDate);
+                const daysUntilExpiry = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
+            });
+
+            if (expiringItems.length > 0) {
+                const notificationDiv = document.createElement('div');
+                notificationDiv.className = 'alert alert-warning';
+                notificationDiv.innerHTML = `
+                    <h4>⚠️ Items Expiring Soon</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        ${expiringItems.map(item => {
+                            const expDate = new Date(item.expirationDate);
+                            const daysUntilExpiry = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                            return `
+                                <li style="margin: 0.5rem 0;">
+                                    ${item.name} (${item.quantity} ${item.quantity === 1 ? 'item' : 'items'}) - 
+                                    Expires in ${daysUntilExpiry} ${daysUntilExpiry === 1 ? 'day' : 'days'}
+                                </li>
+                            `;
+                        }).join('')}
+                    </ul>
+                `;
+                notificationsContainer.appendChild(notificationDiv);
+            }
+
+            // Update summary counts
+            document.getElementById('totalItems').textContent = pantryItems.length;
+            document.getElementById('expiringItems').textContent = expiringItems.length;
+            document.getElementById('lowStockItems').textContent = pantryItems.filter(item => item.quantity <= 2).length;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserRole();
+            checkExpiringItems();
+            
+            // Check for expiring items every hour
+            setInterval(checkExpiringItems, 3600000);
+        });
+    </script>
 </body>
-</html>
+</html> 
