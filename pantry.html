@@ -110,14 +110,16 @@
       <td class="quantity">5</td>
       <td>2025-07-01</td>
       <td>
-        <button class="edit-button" onclick="editQuantity(this)">Edit</button>
-        <button class="delete-button" onclick="deleteRow(this)">Delete</button>
+        <button class="edit-button">Edit</button>
+        <button class="delete-button">Delete</button>
       </td>
     </tr>
   </table>
 
-  <button class="back-button" onclick="window.location.href='dashboard.html'">Back to Main Menu</button>
-  <button class="add-button" onclick="addRow()">Add Item</button>
+  <button class="edit-button">Edit</button>
+  <button class="delete-button">Delete</button>
+  <button class="back-button">Back to Main Menu</button>
+  <button class="add-button">Add Item</button>
 
   <script>
     function editQuantity(button) {
@@ -175,6 +177,6 @@
       `;
     }
   </script>
-
+<script src="pantry.js"></script>
 </body>
 </html>
