@@ -108,24 +108,33 @@
     </div>
 
     <script src="app.js"></script>
-    <script>
-        // Sample data - will be replaced with Firebase data
-        let users = [
-            {
-                id: 1,
-                email: 'john.doe@example.com',
-                role: 'admin',
-                status: 'active',
-                lastLogin: '2024-03-15T10:30:00'
-            },
-            {
-                id: 2,
-                email: 'jane.smith@example.com',
-                role: 'user',
-                status: 'active',
-                lastLogin: '2024-03-15T09:15:00'
+    <script type="module">
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { auth } from "./firebase-config.js";
+
+        const db = getFirestore();
+
+        // Check if user is admin
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
             }
-        ];
+
+            const userProfile = await getUserProfile(user.uid);
+            if (!userProfile || userProfile.role !== 'admin') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Fetch users from Firestore
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            const users = [];
+            usersSnapshot.forEach(doc => {
+                users.push({ id: doc.id, ...doc.data() });
+            });
+            displayUsers(users);
+        });
 
         // Display users
         function displayUsers(userList) {
@@ -136,12 +145,12 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${user.email}</td>
-                    <td>${user.role}</td>
-                    <td>${user.status}</td>
+                    <td>${user.role || 'user'}</td>
+                    <td>${user.status || 'active'}</td>
                     <td>${formatDateTime(user.lastLogin)}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="editUser(${user.id})">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                        <button class="btn btn-primary" onclick="editUser('${user.id}')">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteUser('${user.id}')">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -218,16 +227,6 @@
                 user.email.toLowerCase().includes(searchTerm)
             );
             displayUsers(filteredUsers);
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is admin
-            if (!isAdmin()) {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            displayUsers(users);
         });
     </script>
 </body>

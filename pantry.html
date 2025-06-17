@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantry - Pantry Inventory Management</title>
     <link rel="stylesheet" href="styles.css">
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- Your Supabase config -->
+<script src="supabase-config.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -201,5 +205,57 @@
             displayItems(pantryItems);
         });
     </script>
+
+<script>
+async function loadPantry() {
+    const { data: items, error } = await supabase
+        .from('pantry_items')
+        .select('*')
+        .eq('uid', supabase.auth.session().user.id);
+    if (error) {
+        alert('Error loading pantry items: ' + error.message);
+        return;
+    }
+    displayItems(items || []);
+}
+async function handleAddItem(e) {
+    e.preventDefault();
+    const name = document.getElementById('itemName').value;
+    const quantity = parseInt(document.getElementById('itemQuantity').value);
+    const expirationDate = document.getElementById('itemExpiration').value;
+    await supabase
+        .from('pantry_items')
+        .insert([{ name, quantity, expiration_date: expirationDate, uid: supabase.auth.session().user.id }]);
+    loadPantry();
+    hideModal('addItemModal');
+}
+async function handleEditItem(e) {
+    e.preventDefault();
+    const id = document.getElementById('editItemId').value;
+    const name = document.getElementById('editItemName').value;
+    const quantity = parseInt(document.getElementById('editItemQuantity').value);
+    const expirationDate = document.getElementById('editItemExpiration').value;
+    await supabase
+        .from('pantry_items')
+        .update({ name, quantity, expiration_date: expirationDate })
+        .eq('item_id', id);
+    loadPantry();
+    hideModal('editItemModal');
+}
+async function deleteItem(id) {
+    if (confirm('Are you sure?')) {
+        await supabase.from('pantry_items').delete().eq('item_id', id);
+        loadPantry();
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const session = supabase.auth.session();
+    if (!session) window.location = 'index.html';
+    loadPantry();
+    document.getElementById('addItemForm').onsubmit = handleAddItem;
+    document.getElementById('editItemForm').onsubmit = handleEditItem;
+});
+</script>
+
 </body>
 </html> 

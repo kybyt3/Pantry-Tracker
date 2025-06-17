@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Pantry Inventory Management</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- Your Supabase config -->
+<script src="supabase-config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -27,17 +32,15 @@
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" class="form-control" required 
-                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
-                           title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
-                    <small class="form-text text-muted">
-                        Password must be at least 8 characters long and include uppercase, lowercase, and numbers
-                    </small>
+                    <input type="password" id="password" class="form-control" required>
+                    <div id="passwordStrength"></div>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="confirmPassword">Confirm Password</label>
                     <input type="password" id="confirmPassword" class="form-control" required>
+                    <div class="invalid-feedback"></div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
@@ -49,32 +52,74 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script>
-        // Password validation
-        function validatePassword() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                showAlert('Passwords do not match', 'danger');
-                return false;
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { createUserProfile } from "./firebase-config.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5lzUpzxOFajjIuBVDOpQAQGrkBdkkP2w",
+            authDomain: "pantry-system-108d4.firebaseapp.com",
+            projectId: "pantry-system-108d4",
+            storageBucket: "pantry-system-108d4.firebasestorage.app",
+            messagingSenderId: "928343271258",
+            appId: "1:928343271258:web:c802701c1b144042913563",
+            measurementId: "G-R6GJZZCTJH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Make auth available globally
+        window.auth = auth;
+        window.createUserProfile = createUserProfile;
+        import { createPasswordStrengthIndicator, updatePasswordStrengthIndicator, validatePassword } from './password-utils.js';
+
+        // Initialize password strength indicator
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordStrengthContainer = document.getElementById('passwordStrength');
+        const strengthIndicator = createPasswordStrengthIndicator();
+        passwordStrengthContainer.appendChild(strengthIndicator);
+
+        // Update password strength in real-time
+        passwordInput.addEventListener('input', function() {
+            updatePasswordStrengthIndicator(this.value, strengthIndicator);
+            validateForm();
+        });
+
+        // Validate password match in real-time
+        confirmPasswordInput.addEventListener('input', validateForm);
+
+        function validateForm() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const validation = validatePassword(password, confirmPassword);
+
+            // Update password input validation
+            if (password) {
+                passwordInput.classList.toggle('is-invalid', !validation.isValid);
+                passwordInput.classList.toggle('is-valid', validation.isValid);
+                passwordInput.nextElementSibling.nextElementSibling.textContent = validation.message;
             }
 
-            const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-            if (!passwordRegex.test(password)) {
-                showAlert('Password must be at least 8 characters long and include uppercase, lowercase, and numbers', 'danger');
-                return false;
+            // Update confirm password input validation
+            if (confirmPassword) {
+                confirmPasswordInput.classList.toggle('is-invalid', !validation.isValid);
+                confirmPasswordInput.classList.toggle('is-valid', validation.isValid);
+                confirmPasswordInput.nextElementSibling.textContent = validation.message;
             }
 
-            return true;
+            return validation.isValid;
         }
 
         // Handle signup
-        function handleSignup(event) {
+        async function handleSignup(event) {
             event.preventDefault();
             
-            if (!validatePassword()) {
+            if (!validateForm()) {
                 return false;
             }
 
@@ -82,38 +127,67 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // This will be replaced with actual Firebase authentication
-            // For now, we'll just simulate a successful signup
-            if (fullName && email && password) {
-                // Store user info in localStorage
-                localStorage.setItem('userRole', 'user'); // Default role for new users
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('userName', fullName);
-                
-                showAlert('Account created successfully! Redirecting to login...', 'success');
-                
-                // Redirect to login page after a short delay
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
-            } else {
-                showAlert('Please fill in all fields', 'danger');
+            try {
+                // Create user in Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Create user profile in Firestore
+                const success = await createUserProfile(user.uid, {
+                    email,
+                    fullName
+                });
+
+                if (success) {
+                    showAlert('Account created successfully! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showAlert('Error creating user profile', 'danger');
+                }
+            } catch (error) {
+                showAlert(error.message, 'danger');
             }
 
             return false;
         }
 
-        // Add real-time password validation
-        document.getElementById('confirmPassword').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-            
-            if (password !== confirmPassword) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-    </script>
+        // Make handleSignup available globally
+        window.handleSignup = handleSignup;
+    window.handleSignup = handleSignup;
+</script>
+
+<script>
+// Handle user signup with Supabase and insert profile
+document.getElementById('signupForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (password !== confirm) {
+        alert('Passwords do not match');
+        return;
+    }
+    // Sign up
+    const { data: { user }, error: signError } = await supabase.auth.signUp({ email, password });
+    if (signError) {
+        alert(signError.message);
+        return;
+    }
+    // Insert profile
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([{ uid: user.id, email: user.email, role: 'user' }]);
+    if (profileError) {
+        alert(profileError.message);
+        return;
+    }
+    alert('Account created! Redirecting to login...');
+    setTimeout(() => window.location = 'index.html', 1500);
+};
+</script>
+
 </body>
 </html> 
