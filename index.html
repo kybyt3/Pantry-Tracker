@@ -6,31 +6,9 @@
     <title>Login - Pantry Inventory Management</title>
     <link rel="stylesheet" href="styles.css">
     <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getUserProfile, updateUserProfile } from "./firebase-config.js";
-        
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD5lzUpzxOFajjIuBVDOpQAQGrkBdkkP2w",
-            authDomain: "pantry-system-108d4.firebaseapp.com",
-            projectId: "pantry-system-108d4",
-            storageBucket: "pantry-system-108d4.firebasestorage.app",
-            messagingSenderId: "928343271258",
-            appId: "1:928343271258:web:c802701c1b144042913563",
-            measurementId: "G-R6GJZZCTJH"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // Make auth and functions available globally
-        window.auth = auth;
-        window.getUserProfile = getUserProfile;
-        window.updateUserProfile = updateUserProfile;
-    </script>
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -40,7 +18,7 @@
         </div>
 
         <div style="max-width: 400px; margin: 2rem auto;">
-            <form id="loginForm" onsubmit="return handleLogin(event)">
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" class="form-control" required>
@@ -114,5 +92,35 @@
             return false;
         }
     </script>
+
+<script>
+// Supabase login and role verification
+document.getElementById('loginForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+        alert(error.message);
+        return;
+    }
+    const { data: profile, error: profError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('uid', user.id)
+        .single();
+    if (profError || profile.role !== role) {
+        alert('Invalid role selected');
+        await supabase.auth.signOut();
+        return;
+    }
+    sessionStorage.setItem('userRole', profile.role);
+    sessionStorage.setItem('userEmail', profile.email);
+    sessionStorage.setItem('userName', profile.email);
+    window.location = profile.role === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+};
+</script>
+
 </body>
 </html> 
